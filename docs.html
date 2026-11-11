@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HabitFlow — Product Specification & Roadmap (Notion Doc)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #191919;
+      color: #e6e6e6;
+    }
+    code, pre {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .notion-callout {
+      background: rgba(255, 255, 255, 0.04);
+      border-left: 3px solid #10b981;
+    }
+    .notion-tag {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+    }
+    .notion-property-row {
+      display: flex;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 13px;
+    }
+    .notion-property-label {
+      width: 140px;
+      color: #888;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+  <!-- Top Navigation Bar -->
+  <header class="border-b border-white/10 px-6 py-3 flex items-center justify-between sticky top-0 bg-[#191919]/90 backdrop-blur z-50">
+    <div class="flex items-center gap-3 text-sm text-neutral-400">
+      <span>🚀 Mars Bansiti Workspace</span>
+      <span>/</span>
+      <span class="text-white font-medium flex items-center gap-1.5">⚡ HabitFlow Master Spec</span>
+      <span class="px-2 py-0.5 text-[10px] rounded-full notion-tag font-semibold">Published</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="/" class="text-xs bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 px-3 py-1.5 rounded-md font-medium transition">
+        ← Open HabitFlow App
+      </a>
+      <a href="https://github.com/Marsbansiti/habitflow" target="_blank" class="text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-md font-medium transition flex items-center gap-1.5">
+        <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        GitHub Repo
+      </a>
+    </div>
+  </header>
+
+  <!-- Cover Banner -->
+  <div class="h-44 w-full bg-gradient-to-r from-emerald-950 via-teal-900 to-neutral-900 border-b border-white/5 relative">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-emerald-500/10 via-transparent to-transparent"></div>
+  </div>
+
+  <!-- Document Body Container -->
+  <main class="max-w-4xl mx-auto px-6 pb-24 relative -mt-12">
+    <!-- Notion Icon -->
+    <div class="w-20 h-20 bg-[#252525] border-4 border-[#191919] rounded-2xl flex items-center justify-center text-4xl shadow-xl">
+      ⚡
+    </div>
+
+    <!-- Document Header -->
+    <div class="mt-4 mb-6">
+      <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
+        HabitFlow — Personal Life & Productivity Operating System
+      </h1>
+      <p class="text-neutral-400 text-sm mt-2">
+        Official Architectural Blueprint, Database Schema, Deterministic Streak Algorithms, and Product Roadmap.
+      </p>
+    </div>
+
+    <!-- Notion Properties Block -->
+    <div class="bg-[#202020] rounded-xl p-4 mb-8 border border-white/5">
+      <div class="notion-property-row">
+        <span class="notion-property-label">👤 Author</span>
+        <span class="text-neutral-200 font-medium">Mars Bansiti</span>
+      </div>
+      <div class="notion-property-row">
+        <span class="notion-property-label">🏷️ Category</span>
+        <span class="px-2 py-0.5 rounded text-xs notion-tag font-medium">SaaS / Productivity OS</span>
+      </div>
+      <div class="notion-property-row">
+        <span class="notion-property-label">🌐 GitHub</span>
+        <a href="https://github.com/Marsbansiti/habitflow" target="_blank" class="text-emerald-400 underline hover:text-emerald-300">
+          github.com/Marsbansiti/habitflow
+        </a>
+      </div>
+      <div class="notion-property-row">
+        <span class="notion-property-label">🚀 Live Demo</span>
+        <a href="https://habitflow-app-wxnb.netlify.app" target="_blank" class="text-emerald-400 underline hover:text-emerald-300">
+          habitflow-app-wxnb.netlify.app
+        </a>
+      </div>
+      <div class="notion-property-row">
+        <span class="notion-property-label">📅 Version</span>
+        <span class="text-neutral-300">v1.0.0 Production Architecture (November 2026)</span>
+      </div>
+    </div>
+
+    <!-- Executive Summary Callout -->
+    <div class="notion-callout p-4 rounded-xl mb-8 flex items-start gap-3">
+      <span class="text-xl">💡</span>
+      <div class="text-sm text-neutral-300 leading-relaxed">
+        <strong class="text-white">Product Vision:</strong> HabitFlow is not just another checkbox checklist. It is an intelligent, high-agency Personal Productivity Operating System combining tactile micro-interactions with a deterministic historical analytics engine, Web Audio acoustics, Pomodoro focus tracking, and personalized skill learning.
+      </div>
+    </div>
+
+    <!-- Table of Contents -->
+    <div class="bg-white/[0.02] border border-white/5 rounded-xl p-5 mb-10">
+      <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-3">Table of Contents</h3>
+      <ul class="space-y-1.5 text-sm text-neutral-300">
+        <li><a href="#section-1" class="hover:text-emerald-400 transition">1. The Three Fundamental Problems in Habit Trackers</a></li>
+        <li><a href="#section-2" class="hover:text-emerald-400 transition">2. Technology Stack & Monorepo Topology</a></li>
+        <li><a href="#section-3" class="hover:text-emerald-400 transition">3. Deterministic Streak Engine & Historical Adherence</a></li>
+        <li><a href="#section-4" class="hover:text-emerald-400 transition">4. Relational Database Architecture (18 Prisma Models)</a></li>
+        <li><a href="#section-5" class="hover:text-emerald-400 transition">5. Tactile UI/UX Design System & Web Audio Acoustics</a></li>
+        <li><a href="#section-6" class="hover:text-emerald-400 transition">6. Feature Modules: Focus Timer, Heatmap, Skills Hub</a></li>
+        <li><a href="#section-7" class="hover:text-emerald-400 transition">7. REST API Endpoints Reference</a></li>
+        <li><a href="#section-8" class="hover:text-emerald-400 transition">8. Deployment: Netlify & Vercel Instructions</a></li>
+        <li><a href="#section-9" class="hover:text-emerald-400 transition">9. 2027 Engineering Roadmap</a></li>
+      </ul>
+    </div>
+
+    <!-- Section 1 -->
+    <section id="section-1" class="mb-12">
+      <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+        <span>1.</span> The Three Fundamental Problems in Habit Trackers
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-neutral-300">
+        <div class="bg-white/[0.03] p-4 rounded-xl border border-white/5">
+          <h4 class="font-bold text-white mb-1.5 text-emerald-400">1. Shallow State</h4>
+          <p class="text-neutral-400 text-xs leading-relaxed">
+            Standard trackers store a single boolean per day, discarding duration, difficulty, notes, or verification evidence.
+          </p>
+        </div>
+        <div class="bg-white/[0.03] p-4 rounded-xl border border-white/5">
+          <h4 class="font-bold text-white mb-1.5 text-emerald-400">2. Flawed Streaks</h4>
+          <p class="text-neutral-400 text-xs leading-relaxed">
+            Hardcoded counters penalize users for scheduled rest days, causing burnout and streak fatigue.
+          </p>
+        </div>
+        <div class="bg-white/[0.03] p-4 rounded-xl border border-white/5">
+          <h4 class="font-bold text-white mb-1.5 text-emerald-400">3. Fragmented Tools</h4>
+          <p class="text-neutral-400 text-xs leading-relaxed">
+            Habit tracking, deep work focus timers, and learning hubs are split across three separate subscriptions.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2 -->
+    <section id="section-2" class="mb-12">
+      <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+        <span>2.</span> Technology Stack & Monorepo Topology
+      </h2>
+      <div class="overflow-x-auto bg-[#1c1c1c] rounded-xl border border-white/5">
+        <table class="w-full text-left text-sm text-neutral-300">
+          <thead class="bg-white/[0.04] text-neutral-400 text-xs uppercase">
+            <tr>
+              <th class="p-3">Layer</th>
+              <th class="p-3">Technology</th>
+              <th class="p-3">Responsibility</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-white/5">
+            <tr>
+              <td class="p-3 font-semibold text-white">Frontend</td>
+              <td class="p-3 text-emerald-400 font-mono text-xs">Next.js 15 + React 19</td>
+              <td class="p-3 text-neutral-400">Bento grid dashboard, tactile micro-interactions, responsive views.</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-semibold text-white">Backend API</td>
+              <td class="p-3 text-emerald-400 font-mono text-xs">NestJS 10 + Node.js 22</td>
+              <td class="p-3 text-neutral-400">Modular REST API, JWT authentication, validation pipes, AI coach service.</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-semibold text-white">Database ORM</td>
+              <td class="p-3 text-emerald-400 font-mono text-xs">PostgreSQL + Prisma 6</td>
+              <td class="p-3 text-neutral-400">18 relational models with foreign keys, compound indexes, and cascades.</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-semibold text-white">Audio Synthesis</td>
+              <td class="p-3 text-emerald-400 font-mono text-xs">Web Audio API</td>
+              <td class="p-3 text-neutral-400">Zero-bandwidth synthetic completion chimes, binaural beats, and rain sounds.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Section 3 -->
+    <section id="section-3" class="mb-12">
+      <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+        <span>3.</span> Deterministic Streak Engine Algorithm
+      </h2>
+      <p class="text-sm text-neutral-300 mb-4 leading-relaxed">
+        HabitFlow calculates streaks mathematically from chronological database records. It introduces <strong>Rest Day Protection</strong>, allowing planned recovery without breaking streaks:
+      </p>
+      <div class="bg-[#141414] p-4 rounded-xl border border-white/5 font-mono text-xs text-emerald-300 overflow-x-auto">
+        <pre>// packages/shared/src/streakEngine.ts
+export function calculateStreak(
+  targetDate: string,
+  historyMap: Record&lt;string, 'COMPLETED' | 'REST' | 'MISSED' | 'SKIPPED'&gt;
+): StreakResult {
+  let currentStreak = 0;
+  let cursor = new Date(targetDate);
+
+  while (true) {
+    const dateStr = cursor.toISOString().split('T')[0];
+    const status = historyMap[dateStr];
+
+    if (status === 'COMPLETED') {
+      currentStreak++;
+    } else if (status === 'REST') {
+      // Rest Day preserves streak without incrementing
+      continue;
+    } else {
+      break;
+    }
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return { currentStreak, isActive: currentStreak &gt; 0 };
+}</pre>
+      </div>
+    </section>
+
+    <!-- Section 8 -->
+    <section id="section-8" class="mb-12">
+      <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+        <span>8.</span> Deployment: Netlify & Vercel
+      </h2>
+      <div class="space-y-4 text-sm">
+        <div class="bg-emerald-950/20 border border-emerald-500/30 p-4 rounded-xl">
+          <div class="font-bold text-emerald-400 mb-1">✅ Netlify Deployment (Live)</div>
+          <p class="text-neutral-300 text-xs mb-2">Live production site deployed and verified via Netlify MCP:</p>
+          <a href="https://habitflow-app-wxnb.netlify.app" target="_blank" class="text-xs bg-emerald-500 text-black px-3 py-1.5 rounded-md font-semibold inline-block hover:bg-emerald-400 transition">
+            Visit Netlify Production →
+          </a>
+        </div>
+        <div class="bg-blue-950/20 border border-blue-500/30 p-4 rounded-xl">
+          <div class="font-bold text-blue-400 mb-1">⚡ Vercel Deployment (1-Click)</div>
+          <p class="text-neutral-300 text-xs mb-2">Import directly from GitHub into your Vercel workspace:</p>
+          <a href="https://vercel.com/new/clone?repository-url=https://github.com/Marsbansiti/habitflow" target="_blank" class="text-xs bg-blue-500 text-white px-3 py-1.5 rounded-md font-semibold inline-block hover:bg-blue-400 transition">
+            Deploy on Vercel →
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="mt-16 pt-8 border-t border-white/10 text-center text-xs text-neutral-500">
+      HabitFlow Personal Operating System · Designed and Architected by Mars Bansiti · 2026
+    </footer>
+  </main>
+</body>
+</html>
