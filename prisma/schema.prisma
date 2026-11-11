@@ -1,0 +1,494 @@
+// HabitFlow Production PostgreSQL Schema with Prisma ORM
+// Enforces UUID primary keys, user data isolation, timezone-aware schedules, and historical logging
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -----------------------------------------------------------------------------
+// 1. USERS & AUTHENTICATION
+// -----------------------------------------------------------------------------
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String
+  name          String
+  avatarUrl     String?
+  role          UserRole  @default(USER)
+  timezone      String    @default("UTC")
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+
+  settings        UserSettings?
+  categories      Category[]
+  habits          Habit[]
+  habitLogs       HabitLog[]
+  habitSessions   HabitSession[]
+  habitNotes      HabitNote[]
+  goals           Goal[]
+  achievements    UserAchievement[]
+  journalEntries  JournalEntry[]
+  reminders       Reminder[]
+  notifications   Notification[]
+  dailySummaries  DailySummary[]
+  aiInsights      AIInsight[]
+
+  @@index([email])
+  @@map("users")
+}
+
+enum UserRole {
+  USER
+  PRO
+  ADMIN
+}
+
+// -----------------------------------------------------------------------------
+// 2. USER SETTINGS & PREFERENCES
+// -----------------------------------------------------------------------------
+model UserSettings {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  theme           String   @default("emerald") // emerald, ultraviolet, amber, daylight
+  soundEnabled    Boolean  @default(true)
+  reducedMotion   Boolean  @default(false)
+  highContrast    Boolean  @default(false)
+  hapticsEnabled  Boolean  @default(true)
+  animationSpeed  Float    @default(1.0)       // 0.4, 1.0, 1.5
+  weekStartsOn    Int      @default(1)         // 1 = Monday, 0 = Sunday
+  quietHoursStart String?  // "22:00"
+  quietHoursEnd   String?  // "07:00"
+  emailReminders  Boolean  @default(true)
+  pushReminders   Boolean  @default(true)
+  telegramChatId  String?
+  streakFreezeRemaining Int @default(3)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_settings")
+}
+
+// -----------------------------------------------------------------------------
+// 3. CATEGORIES
+// -----------------------------------------------------------------------------
+model Category {
+  id        String   @id @default(uuid())
+  userId    String
+  name      String   // Mind, Body, Deep Work, Learning, Fitness
+  icon      String   @default("🎯")
+  color     String   @default("#10b981")
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  habits Habit[]
+
+  @@unique([userId, name])
+  @@index([userId])
+  @@map("categories")
+}
+
+// -----------------------------------------------------------------------------
+// 4. HABITS (DEFINITIONS)
+// -----------------------------------------------------------------------------
+model Habit {
+  id             String          @id @default(uuid())
+  userId         String
+  categoryId     String?
+  title          String
+  description    String?
+  priority       HabitPriority   @default(NORMAL)
+  routineStack   RoutineStack    @default(ANYTIME)
+  targetValue    Float?          // e.g. 20
+  targetUnit     String?         // e.g. "mins", "pages", "words"
+  targetDuration Int?            // minutes expected
+  difficulty     HabitDifficulty @default(MEDIUM)
+  color          String?
+  icon           String?
+  timeHint       String?         // "07:30 AM"
+  startDate      DateTime        @default(now())
+  endDate        DateTime?
+  status         HabitStatus     @default(ACTIVE)
+  sortOrder      Int             @default(0)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  deletedAt      DateTime?
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category      Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  schedule      HabitSchedule?
+  logs          HabitLog[]
+  sessions      HabitSession[]
+  notes         HabitNote[]
+  goalHabits    GoalHabit[]
+
+  @@index([userId, status])
+  @@index([userId, routineStack])
+  @@map("habits")
+}
+
+enum HabitPriority {
+  LOW
+  NORMAL
+  HIGH
+}
+
+enum RoutineStack {
+  MORNING
+  MIDDAY
+  EVENING
+  ANYTIME
+}
+
+enum HabitDifficulty {
+  EASY
+  MEDIUM
+  CHALLENGING
+  ELITE
+}
+
+enum HabitStatus {
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+// -----------------------------------------------------------------------------
+// 5. HABIT SCHEDULES (RECURRENCE & TIMEZONE RULES)
+// -----------------------------------------------------------------------------
+model HabitSchedule {
+  id           String        @id @default(uuid())
+  habitId      String        @unique
+  frequency    FrequencyType @default(DAILY)
+  daysOfWeek   Int[]         // [1,2,3,4,5] for weekdays (1=Mon, 7=Sun)
+  customInterval Int?        // e.g. every 2 days
+  reminderTime String?       // "07:30"
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  habit Habit @relation(fields: [habitId], references: [id], onDelete: Cascade)
+
+  @@map("habit_schedules")
+}
+
+enum FrequencyType {
+  DAILY
+  WEEKDAYS
+  WEEKENDS
+  WEEKLY
+  CUSTOM
+}
+
+// -----------------------------------------------------------------------------
+// 6. HABIT LOGS (HISTORICAL DAILY COMPLETION RECORDS)
+// -----------------------------------------------------------------------------
+model HabitLog {
+  id             String        @id @default(uuid())
+  userId         String
+  habitId        String
+  date           String        // "YYYY-MM-DD" in user's localized timezone
+  status         LogStatus     @default(COMPLETED)
+  actualValue    Float?        // e.g. 25 mins or 18 pages
+  notes          String?
+  evidenceUrl    String?       // attachment or screenshot URL
+  isRestDay      Boolean       @default(false)
+  isFrozen       Boolean       @default(false)
+  completedAt    DateTime?     @default(now())
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  habit Habit @relation(fields: [habitId], references: [id], onDelete: Cascade)
+
+  @@unique([habitId, date])
+  @@index([userId, date])
+  @@index([habitId, date])
+  @@map("habit_logs")
+}
+
+enum LogStatus {
+  COMPLETED
+  PARTIAL
+  SKIPPED
+  MISSED
+  REST_DAY
+}
+
+// -----------------------------------------------------------------------------
+// 7. HABIT SESSIONS (FOCUS & POMODORO TIME TRACKING)
+// -----------------------------------------------------------------------------
+model HabitSession {
+  id             String        @id @default(uuid())
+  userId         String
+  habitId        String?
+  mode           SessionMode   @default(POMODORO)
+  startedAt      DateTime      @default(now())
+  endedAt        DateTime?
+  durationSeconds Int          @default(0)
+  targetSeconds  Int           @default(1500)
+  isCompleted    Boolean       @default(false)
+  ambientSound   String?       @default("mute") // rain, white, bowl
+  notes          String?
+  createdAt      DateTime      @default(now())
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  habit Habit? @relation(fields: [habitId], references: [id], onDelete: SetNull)
+
+  @@index([userId, startedAt])
+  @@map("habit_sessions")
+}
+
+enum SessionMode {
+  POMODORO
+  DEEP_FLOW
+  SHORT_BREAK
+  LONG_BREAK
+  STOPWATCH
+}
+
+// -----------------------------------------------------------------------------
+// 8. HABIT NOTES & EVIDENCE
+// -----------------------------------------------------------------------------
+model HabitNote {
+  id        String   @id @default(uuid())
+  userId    String
+  habitId   String
+  content   String
+  mediaUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  habit Habit @relation(fields: [habitId], references: [id], onDelete: Cascade)
+
+  @@index([userId, habitId])
+  @@map("habit_notes")
+}
+
+// -----------------------------------------------------------------------------
+// 9. GOALS & 10. GOAL_HABITS
+// -----------------------------------------------------------------------------
+model Goal {
+  id          String      @id @default(uuid())
+  userId      String
+  title       String
+  description String?
+  period      GoalPeriod  @default(WEEKLY)
+  targetValue Float
+  unit        String      @default("rituals")
+  currentValue Float      @default(0)
+  startDate   DateTime
+  endDate     DateTime
+  isCompleted Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  milestones Milestone[]
+  goalHabits GoalHabit[]
+
+  @@index([userId, period])
+  @@map("goals")
+}
+
+enum GoalPeriod {
+  WEEKLY
+  MONTHLY
+  YEARLY
+  CUSTOM
+}
+
+model GoalHabit {
+  goalId  String
+  habitId String
+
+  goal  Goal  @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  habit Habit @relation(fields: [habitId], references: [id], onDelete: Cascade)
+
+  @@id([goalId, habitId])
+  @@map("goal_habits")
+}
+
+// -----------------------------------------------------------------------------
+// 11. MILESTONES
+// -----------------------------------------------------------------------------
+model Milestone {
+  id          String    @id @default(uuid())
+  goalId      String
+  title       String
+  targetValue Float
+  targetDate  DateTime?
+  isAchieved  Boolean   @default(false)
+  achievedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  goal Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@index([goalId])
+  @@map("milestones")
+}
+
+// -----------------------------------------------------------------------------
+// 12. ACHIEVEMENTS & 13. USER_ACHIEVEMENTS
+// -----------------------------------------------------------------------------
+model Achievement {
+  id          String   @id @default(uuid())
+  slug        String   @unique // e.g. "streak-7d", "streak-30d", "deep-flow-100h"
+  title       String
+  description String
+  badgeIcon   String   // "🔥", "💎", "⚡", "👑", "🏆"
+  category    String   @default("Consistency")
+  threshold   Int      @default(7)
+  createdAt   DateTime @default(now())
+
+  userAchievements UserAchievement[]
+
+  @@map("achievements")
+}
+
+model UserAchievement {
+  id            String   @id @default(uuid())
+  userId        String
+  achievementId String
+  unlockedAt    DateTime @default(now())
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@index([userId])
+  @@map("user_achievements")
+}
+
+// -----------------------------------------------------------------------------
+// 14. JOURNAL ENTRIES & DAILY REFLECTION
+// -----------------------------------------------------------------------------
+model JournalEntry {
+  id             String    @id @default(uuid())
+  userId         String
+  date           String    // "YYYY-MM-DD"
+  title          String?
+  content        String
+  mood           MoodType  @default(GREAT)
+  energyLevel    Int       @default(4) // 1 to 5
+  productivityScore Int    @default(5) // 1 to 5
+  tags           String[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@index([userId, date])
+  @@map("journal_entries")
+}
+
+enum MoodType {
+  GREAT
+  GOOD
+  NEUTRAL
+  TIRED
+  STRESSED
+}
+
+// -----------------------------------------------------------------------------
+// 15. REMINDERS & 16. NOTIFICATIONS
+// -----------------------------------------------------------------------------
+model Reminder {
+  id        String       @id @default(uuid())
+  userId    String
+  title     String
+  time      String       // "07:30"
+  channel   NotificationChannel @default(BROWSER)
+  isEnabled Boolean      @default(true)
+  daysOfWeek Int[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("reminders")
+}
+
+enum NotificationChannel {
+  BROWSER
+  WEB_PUSH
+  EMAIL
+  TELEGRAM
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  message   String
+  type      String   @default("info")
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+// -----------------------------------------------------------------------------
+// 17. DAILY SUMMARIES (PRE-AGGREGATED ANALYTICS SNAPSHOTS)
+// -----------------------------------------------------------------------------
+model DailySummary {
+  id               String   @id @default(uuid())
+  userId           String
+  date             String   // "YYYY-MM-DD"
+  totalHabits      Int
+  completedHabits  Int
+  completionRate   Float    // percentage 0 - 100
+  totalFocusSeconds Int     @default(0)
+  activeStreak     Int
+  isPerfectDay     Boolean  @default(false)
+  createdAt        DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@index([userId, date])
+  @@map("daily_summaries")
+}
+
+// -----------------------------------------------------------------------------
+// 18. AI INSIGHTS & COACHING ADVICE
+// -----------------------------------------------------------------------------
+model AIInsight {
+  id          String      @id @default(uuid())
+  userId      String
+  type        InsightType @default(DAILY_TIP)
+  title       String
+  content     String
+  actionUrl   String?
+  isDismissed Boolean     @default(false)
+  rating      Int?        // 1-5 feedback
+  metadata    Json?       // supporting stats sent to LLM
+  createdAt   DateTime    @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type, isDismissed])
+  @@map("ai_insights")
+}
+
+enum InsightType {
+  DAILY_TIP
+  WEEKLY_REVIEW
+  ROUTINE_OPTIMIZATION
+  DROPOFF_ALERT
+}

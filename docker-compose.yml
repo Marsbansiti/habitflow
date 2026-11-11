@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Primary Relational Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: habitflow_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: habitflow_user
+      POSTGRES_PASSWORD: habitflow_secret_password
+      POSTGRES_DB: habitflow_production
+    ports:
+      - "5432:5432"
+    volumes:
+      - habitflow_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U habitflow_user -d habitflow_production"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for BullMQ Background Jobs & Cache
+  redis:
+    image: redis:7-alpine
+    container_name: habitflow_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - habitflow_redisdata:/data
+
+  # NestJS API Backend
+  api:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.api
+    container_name: habitflow_api
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: "postgresql://habitflow_user:habitflow_secret_password@postgres:5432/habitflow_production?schema=public"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: "habitflow_jwt_secret_super_secure_key"
+      OPENAI_API_KEY: "${OPENAI_API_KEY}"
+    ports:
+      - "4000:4000"
+
+  # Next.js Web Frontend
+  web:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.web
+    container_name: habitflow_web
+    restart: always
+    depends_on:
+      - api
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      NEXT_PUBLIC_API_URL: "http://localhost:4000"
+    ports:
+      - "3000:3000"
+
+volumes:
+  habitflow_pgdata:
+  habitflow_redisdata:

@@ -1,0 +1,25 @@
+{
+  "name": "habitflow-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "HabitFlow — Personal Life & Productivity Operating System",
+  "scripts": {
+    "dev": "npm run dev --workspace=apps/web",
+    "dev:api": "npm run start:dev --workspace=apps/api",
+    "build": "npm run build --workspaces",
+    "start": "npm run start --workspace=apps/web"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "keywords": [
+    "productivity",
+    "habit-tracker",
+    "streak-engine",
+    "focus-timer",
+    "personal-operating-system"
+  ],
+  "author": "Mars Bansiti",
+  "license": "MIT"
+}
